@@ -1,0 +1,45 @@
+# language: CMake, file: CMakeLists.txt
+# Requer: NDK r26+, submodules em third_party/imgui e third_party/Dobby
+cmake_minimum_required(VERSION 3.22)
+project(hellborn LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fvisibility=hidden -fno-exceptions -fno-rtti -Wno-unused-parameter")
+
+# ----- ImGui -----
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/third_party/imgui)
+add_library(imgui STATIC
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+target_include_directories(imgui PUBLIC
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+# ----- Dobby (hook engine) -----
+add_subdirectory(third_party/Dobby)
+# exporta target: dobby
+
+# ----- HELLBORN -----
+add_library(hellborn SHARED
+    jni/hellborn.cpp
+    jni/stealth.cpp
+    hooks/esp.cpp
+    hooks/aimbot.cpp
+    menu/overlay.cpp
+)
+
+target_include_directories(hellborn PRIVATE include)
+target_link_libraries(hellborn
+    android
+    log
+    EGL
+    GLESv3
+    imgui
+    dobby
+)
